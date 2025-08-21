@@ -40,7 +40,7 @@ session_start();
         <h3 class="text-primary text-capitalize mb-1">
             <i class="fa-solid fa-lock"></i> Sign In
         </h3>
-        <p class="mb-3 fs-5 text-muted">LJ student</p>
+        <p class="mb-3 fs-5 text-muted">LJ Student</p>
 
         <form action="login.php" method="post">
 
