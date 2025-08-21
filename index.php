@@ -1,97 +1,126 @@
 <?php
 session_start();
+
+// get + clear flash error
+$error = $_SESSION['error'] ?? '';
+unset($_SESSION['error']);
+
+// CSRF token
+if (empty($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(16));
+}
+$csrf = $_SESSION['csrf'];
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap 5.3.7 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/index.css">
-
-    <title>CRM</title>
-</head>
-
+<<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LJ University - Sign In</title>
+  <style>
+    :root{
+      --brand:#1976d2;
+      --brandDark:#135da7;
+      --text:#2c3e50;
+      --muted:#6b7280;
+      --ring:rgba(25,118,210,.35);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background: radial-gradient(1200px 600px at 80% -10%, #e0f2fe, transparent 60%),
+                  linear-gradient(135deg,#1e3a8a,#60a5fa 55%,#ffffff);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+    }
+    .card{
+      width:min(92vw, 420px);
+      background:#fff; padding:28px; border-radius:18px;
+      box-shadow:0 15px 45px rgba(0,0,0,.18);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; margin-bottom:10px;
+    }
+    .brand img{ width:56px; height:56px; object-fit:contain; }
+    .brand h1{ margin:0; font-size:24px; color:var(--text); letter-spacing:.3px; }
+    .sub{ margin:0; color:var(--muted); font-size:14px; }
+    form{ margin-top:18px; }
+    .field{ position:relative; margin:12px 0; }
+    .label{ font-size:13px; color:var(--muted); margin-bottom:6px; display:block; }
+    .input{
+      width:100%; padding:12px 42px 12px 14px; border:1px solid #e5e7eb; border-radius:12px;
+      font-size:15px; outline:none; transition:.18s;
+      background:#fff;
+    }
+    .input:focus{ border-color:var(--brand); box-shadow:0 0 0 4px var(--ring); }
+    .icon{
+      position:absolute; right:12px; top:36px; cursor:pointer; user-select:none; font-size:13px; color:#6b7280;
+    }
+    .actions{ display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+    .link{ font-size:13px; color:var(--brand); text-decoration:none; }
+    .btn{
+      width:100%; margin-top:16px; padding:12px 16px; border:0; border-radius:12px;
+      background:var(--brand); color:#fff; font-weight:700; font-size:15px; cursor:pointer; transition:.18s;
+    }
+    .btn:hover{ background:var(--brandDark); transform:translateY(-1px); }
+    .error{
+      background:#fee2e2; color:#991b1b; border:1px solid #fecaca; padding:10px 12px; border-radius:10px; font-size:14px; margin-top:12px;
+    }
+    .foot{
+      margin-top:16px; font-size:12px; color:#6b7280; text-align:center;
+    }
+    .foot a{ color:var(--brand); text-decoration:none; }
+  </style>
+</head>>
 <body>
-
-    <!-- Error Alert -->
-    <?php if (!empty($_SESSION['error'])): ?>
-        <div class="alert alert-warning alert-dismissible fade show m-3" role="alert">
-            <strong>Oops!</strong> <?= $_SESSION['error']; ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <?php unset($_SESSION['error']); ?>
-    <?php endif; ?> 
-
-    <div class="container my-5 p-4 border rounded-3 shadow-sm">
-        <img src="assets/images/lj_logo.png" class="mb-3" alt="LJ Logo" width="100%" height="100">
-        <h3 class="text-primary text-capitalize mb-1">
-            <i class="fa-solid fa-lock"></i> Sign In
-        </h3>
-        <p class="mb-3 fs-5 text-muted">LJ Student</p>
-
-        <form action="login.php" method="post">
-
-            <!-- Username -->
-            <div class="mb-3">
-                <label for="user" class="form-label">Username</label>
-                <div class="input-group">
-                    <span class="input-group-text" id="user-addon">
-                        <i class="fa-regular fa-user"></i>
-                    </span>
-                    <input type="text" id="user" name="user" class="form-control" placeholder="Enter username"
-                        aria-label="Username" aria-describedby="user-addon" required autofocus>
-                </div>
-            </div>
-
-            <!-- Password -->
-            <div class="mb-3">
-                <label for="pass" class="form-label">Password</label>
-                <div class="input-group">
-                    <span class="input-group-text" id="pass-addon">
-                        <i class="fa-solid fa-lock"></i>
-                    </span>
-                    <input type="password" id="pass" name="pass" class="form-control" placeholder="Enter password"
-                        aria-label="Password" aria-describedby="pass-addon" required>
-                </div>
-            </div>
-
-            <!-- Forgot Password -->
-            <div class="text-center mb-3">
-                <a href="forgot.php">Forgot password?</a>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary w-100 text-capitalize">Secured Sign In</button>
-
-            <!-- Footer -->
-            <div class="text-end mt-4">
-                <p class="mb-1">
-                    <i class="fa-solid fa-code"></i> Developed by: <a href="#">Mihir Vaghela</a>
-                </p>
-                <p class="mb-0">
-                    Don't have an account? <a href="reg.php">Sign up</a>
-                </p>
-            </div>
-        </form>
+  <div class="card">
+    <div class="brand">
+      <!-- replace with your logo path -->
+      <img src="logo.png" alt="LJ University">
+      <div>
+        <h1>Sign In</h1>
+        <p class="sub">LJ student</p>
+      </div>
     </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
-        crossorigin="anonymous"></script>
-</body>
+    <?php if ($error): ?>
+      <div class="error"><?= htmlspecialchars($error, ENT_QUOTES) ?></div>
+    <?php endif; ?>
 
-</html>
+    <form action="login.php" method="POST" autocomplete="off" novalidate>
+      <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>">
+
+      <div class="field">
+        <label class="label" for="user">Username or Email</label>
+        <input class="input" id="user" name="user" type="text" placeholder="e.g. jdoe or jdoe@lju.edu" required />
+      </div>
+
+      <div class="field">
+        <label class="label" for="pass">Password</label>
+        <input class="input" id="pass" name="pass" type="password" placeholder="Enter your password" required />
+        <span class="icon" id="toggle">Show</span>
+      </div>
+
+      <div class="actions">
+        <a class="link" href="#">Forgot password?</a>
+      </div>
+
+      <button class="btn" type="submit">Secured Sign In</button>
+    </form>
+
+    <div class="foot">
+      Developed by <a href="#" rel="noopener">Mihir Vaghela</a> •
+      Don’t have an account? <a href="signup.php">Sign up</a>
+    </div>
+  </div>
+
+  <script>
+    // show/hide password
+    const pass = document.getElementById('pass');
+    const toggle = document.getElementById('toggle');
+    toggle.addEventListener('click', () => {
+      if (pass.type === 'password') { pass.type = 'text'; toggle.textContent = 'Hide'; }
+      else { pass.type = 'password'; toggle.textContent = 'Show'; }
+    });
+  </script>
+</body>
+</html>>
